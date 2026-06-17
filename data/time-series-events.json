@@ -1,0 +1,10 @@
+[
+  {"timestamp":"2026-06-03T06:55:00-07:00","eventType":"carrier_bid_received","entityId":"D02","source":"carrier_market","value":390,"unit":"USD","message":"Pacific Cartage bid received"},
+  {"timestamp":"2026-06-03T07:09:00-07:00","eventType":"berth_delay","entityId":"T01","source":"marien_terminal","value":45,"unit":"minutes","message":"MSC Aurora berth delayed"},
+  {"timestamp":"2026-06-03T07:18:00-07:00","eventType":"capacity_forecast","entityId":"northport_warehouse","source":"warehouse_wms","value":38,"unit":"occupied_slots","message":"Peak forecast updated"},
+  {"timestamp":"2026-06-03T07:24:00-07:00","eventType":"appointment_confirmed","entityId":"T02","source":"marien_terminal","value":"M-22","unit":"slot","message":"Terminal appointment confirmed"},
+  {"timestamp":"2026-06-03T08:03:00-07:00","eventType":"container_discharged","entityId":"T01","source":"marien_terminal","value":"CAXU482190","unit":"container","message":"Container discharged from vessel"},
+  {"timestamp":"2026-06-03T09:52:00-07:00","eventType":"truck_arrived_empty","entityId":"D01","source":"trucker_telematics","value":"TRK-204","unit":"truck","message":"Truck arrived for pickup"},
+  {"timestamp":"2026-06-03T11:34:00-07:00","eventType":"warehouse_gate_in","entityId":"I01","source":"warehouse_yms","value":"Bay 07","unit":"bay","message":"Container received at warehouse"},
+  {"timestamp":"2026-06-03T13:12:00-07:00","eventType":"cross_dock_started","entityId":"C01","source":"warehouse_wms","value":12,"unit":"bay","message":"Patio furniture cross-dock started"}
+]

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeshPlan Drayage Optimizer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">M</span>
+      <div><strong>MeshPlan</strong><span>Drayage optimizer</span></div>
+    </div>
+    <div class="network-state"><span class="live-dot"></span>Live network <strong id="clock">07:30</strong></div>
+    <div class="top-actions">
+      <button class="secondary" id="resetButton">Reset scenario</button>
+      <button class="primary" id="delayButton">Simulate terminal delay</button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <nav class="sidebar" aria-label="Primary navigation">
+      <button class="nav-item active" data-page="control" title="Control tower"><span>⌁</span>Control tower</button>
+      <button class="nav-item" data-page="tos" title="TOS screen"><span>▣</span>TOS</button>
+      <button class="nav-item" data-page="wms" title="WMS screen"><span>▥</span>WMS</button>
+      <button class="nav-item" data-page="trucker" title="Trucker screen"><span>▱</span>Trucker</button>
+      <button class="nav-item" data-page="network" title="Network map"><span>⌖</span>Network map</button>
+      <button class="nav-item" data-page="master" title="Master schedule"><span>▤</span>Master schedule</button>
+      <button class="nav-item" data-page="market" title="Carrier market"><span>⇄</span>Carrier market</button>
+      <button class="nav-item" data-page="facilities" title="Facilities"><span>▦</span>Facilities</button>
+      <button class="nav-item" data-page="exceptions" title="Exceptions"><span>!</span>Exceptions <b id="exceptionCount">1</b></button>
+      <div class="sidebar-footer">
+        <span>Plan horizon</span>
+        <strong>Jun 03–04</strong>
+        <small>18 linked moves</small>
+      </div>
+    </nav>
+
+    <main>
+      <section class="summary-band control-only">
+        <div>
+          <span>On-time plan</span>
+          <strong id="onTimeMetric">94%</strong>
+          <small id="onTimeDelta">17 of 18 moves protected</small>
+        </div>
+        <div>
+          <span>Warehouse capacity</span>
+          <strong id="capacityMetric">38 / 50</strong>
+          <small>Peak slots at 13:00</small>
+        </div>
+        <div>
+          <span>Unassigned moves</span>
+          <strong id="unassignedMetric">2</strong>
+          <small>Open for carrier bids</small>
+        </div>
+        <div>
+          <span>Cost at risk</span>
+          <strong id="riskMetric">$4,850</strong>
+          <small>Detention + missed windows</small>
+        </div>
+      </section>
+
+      <section class="command-row control-only">
+        <div>
+          <h1>Master schedule</h1>
+          <p id="scheduleSubtitle">Terminal, truck, warehouse, cross-dock, and export plan</p>
+        </div>
+        <div class="filters" id="filters">
+          <button class="filter active" data-filter="all">All lanes</button>
+          <button class="filter" data-filter="exception">Exceptions</button>
+          <button class="filter" data-filter="unassigned">Needs carrier</button>
+        </div>
+      </section>
+
+      <section class="workspace control-only">
+        <div class="schedule-panel">
+          <div class="time-axis" id="timeAxis"></div>
+          <div class="schedule" id="schedule"></div>
+          <div class="capacity-strip">
+            <div class="capacity-title"><strong>Warehouse slot load</strong><span>50 slot limit</span></div>
+            <div class="capacity-bars" id="capacityBars"></div>
+          </div>
+        </div>
+
+        <aside class="inspector">
+          <div class="inspector-header">
+            <span id="inspectorType">Exception impact</span>
+            <strong id="inspectorTitle">MSC Aurora berth delay</strong>
+          </div>
+          <div class="impact-number"><strong id="impactNumber">4</strong><span>downstream moves affected</span></div>
+          <div class="detail-list" id="detailList"></div>
+          <div class="recommendation">
+            <span>Optimizer recommendation</span>
+            <p id="recommendationText">Hold Costco patio delivery, shift cross-dock to Bay 12, and protect the BBQ consolidation cutoff.</p>
+            <button class="primary full" id="applyButton">Apply optimized recovery</button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="lower-grid control-only">
+        <div class="market-panel">
+          <div class="section-heading">
+            <div><h2>Carrier market</h2><p>Advertised pickups and active bids</p></div>
+            <span id="bidStatus">2 moves open</span>
+          </div>
+          <div id="bidTable"></div>
+        </div>
+        <div class="events-panel">
+          <div class="section-heading">
+            <div><h2>Event stream</h2><p>Latest schedule-driving signals</p></div>
+          </div>
+          <div id="eventStream"></div>
+        </div>
+      </section>
+      <section class="page-view" id="pageView"></section>
+    </main>
+  </div>
+  <script src="data.js"></script>
+  <script src="network.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

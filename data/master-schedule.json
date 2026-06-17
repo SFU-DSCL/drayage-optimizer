@@ -1,0 +1,18 @@
+{
+  "planId": "MP-2026-06-03-A",
+  "horizonStart": "2026-06-03T07:00:00-07:00",
+  "horizonEnd": "2026-06-04T07:00:00-07:00",
+  "timezone": "America/Vancouver",
+  "moves": [
+    {"id":"T01","type":"terminal_discharge","container":"CAXU482190","location":"Marien Terminal T4","plannedStart":"2026-06-03T08:00:00-07:00","plannedEnd":"2026-06-03T09:35:00-07:00","dependencies":[]},
+    {"id":"D01","type":"drayage_import","container":"CAXU482190","origin":"Marien Terminal T4","destination":"NorthPort Warehouse","plannedStart":"2026-06-03T09:48:00-07:00","plannedEnd":"2026-06-03T11:18:00-07:00","dependencies":["T01"],"carrier":"Swift Haul"},
+    {"id":"I01","type":"warehouse_receive","container":"CAXU482190","location":"NorthPort Warehouse","bay":"07","plannedStart":"2026-06-03T11:30:00-07:00","plannedEnd":"2026-06-03T12:42:00-07:00","dependencies":["D01"]},
+    {"id":"C01","type":"cross_dock","commodity":"Patio furniture","location":"NorthPort Warehouse","bay":"12","plannedStart":"2026-06-03T13:06:00-07:00","plannedEnd":"2026-06-03T14:18:00-07:00","dependencies":["I01"]},
+    {"id":"E01","type":"warehouse_export_stage","commodity":"Patio furniture","location":"NorthPort Warehouse","bay":"Costco Door 01","plannedStart":"2026-06-03T14:36:00-07:00","plannedEnd":"2026-06-03T15:42:00-07:00","dependencies":["C01"]},
+    {"id":"L01","type":"final_delivery","commodity":"Patio furniture","destination":"Costco DC","appointmentWindowStart":"2026-06-03T16:00:00-07:00","appointmentWindowEnd":"2026-06-03T17:30:00-07:00","dependencies":["E01"]},
+    {"id":"D02","type":"drayage_import","container":"OOLU729440","origin":"Marien Terminal T4","destination":"NorthPort Warehouse","plannedStart":"2026-06-03T11:12:00-07:00","plannedEnd":"2026-06-03T12:30:00-07:00","dependencies":["T02"],"carrier":null},
+    {"id":"C02","type":"cross_dock","commodity":"BBQ units","location":"NorthPort Warehouse","bay":"14","plannedStart":"2026-06-03T14:24:00-07:00","plannedEnd":"2026-06-03T15:54:00-07:00","dependencies":["I02"]},
+    {"id":"E03","type":"warehouse_export_stage","commodity":"BBQ units","location":"NorthPort Warehouse","bay":"Costco Door 02","plannedStart":"2026-06-03T17:30:00-07:00","plannedEnd":"2026-06-03T18:30:00-07:00","dependencies":["C03"]},
+    {"id":"L02","type":"final_delivery","commodity":"BBQ units","destination":"Costco DC","appointmentWindowStart":"2026-06-03T18:00:00-07:00","appointmentWindowEnd":"2026-06-03T19:00:00-07:00","dependencies":["D04"]}
+  ]
+}

@@ -1,0 +1,5 @@
+[
+  {"bidId":"B-1001","moveId":"D02","carrier":"HarborLink","truckId":"TRK-311","pickupEta":"2026-06-03T10:05:00-07:00","price":425,"currency":"USD","status":"active"},
+  {"bidId":"B-1002","moveId":"D02","carrier":"Pacific Cartage","truckId":"TRK-419","pickupEta":"2026-06-03T10:20:00-07:00","price":390,"currency":"USD","status":"active"},
+  {"bidId":"B-1003","moveId":"D03","carrier":"Coastline Trucking","truckId":"TRK-515","pickupEta":"2026-06-03T13:05:00-07:00","price":360,"currency":"USD","status":"active"}
+]

@@ -1,0 +1,18 @@
+{
+  "terminal": {"id":"marien_terminal","appointmentSlotsPerHour":12,"operatingHours":"24x7"},
+  "warehouse": {
+    "id":"northport_warehouse",
+    "totalConcurrentSlots":50,
+    "receivingBays":["07","08","11"],
+    "crossDockBays":["12","14","15"],
+    "dedicatedOutboundDoors":[
+      {"id":"costco_door_01","customer":"Costco","commodity":"Patio furniture"},
+      {"id":"costco_door_02","customer":"Costco","commodity":"BBQ units"}
+    ]
+  },
+  "trucks":[
+    {"id":"TRK-204","carrier":"Swift Haul","status":"assigned","availableAt":"2026-06-03T09:30:00-07:00"},
+    {"id":"TRK-311","carrier":"HarborLink","status":"available","availableAt":"2026-06-03T10:05:00-07:00"},
+    {"id":"TRK-419","carrier":"Pacific Cartage","status":"available","availableAt":"2026-06-03T10:20:00-07:00"}
+  ]
+}
