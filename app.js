@@ -6,6 +6,8 @@ let recoveryApplied = false;
 let selectedTask = "T01";
 let currentPage = "control";
 let reservedBay = null;
+let terminalFilter = "all";
+let terminalNow = "09:00";
 let generatedData = createFallbackGeneratedData();
 let generatedDataReady = true;
 const schedule = document.querySelector("#schedule");
@@ -330,53 +332,68 @@ function renderMetricStrip(items) {
     <div><span>${item.label}</span><strong>${item.value}</strong><small>${item.detail}</small></div>`).join("")}</div>`;
 }
 
+function displayContainerId(value) {
+  return String(value || "").replace(/^([A-Z]{4})(\d{6,7})$/, "$1 $2");
+}
+
 function renderTosPage() {
-  if (!generatedDataReady) return generatedLoadingState("TOS screen");
-  const terminalOps = operationsByType(["terminal"]);
-  const dischargeOps = terminalOps.filter(row => row.operation_type === "terminal_discharge");
-  const readyOps = terminalOps.filter(row => row.operation_type === "terminal_gate_ready");
-  const lateOps = terminalOps.filter(row => Number(row.lateness_minutes) > 0);
-  const vesselCounts = generatedData.containers.reduce((counts, container) => {
-    counts[container.vessel_call_id] = (counts[container.vessel_call_id] || 0) + 1;
-    return counts;
-  }, {});
-  const nextContainers = generatedData.containers.slice(0, 8);
-  return `${pageHeader("TOS screen", "Terminal operating view for vessel discharge, gate-ready status, and container release",
-    `<button class="secondary" data-action="refresh-generated">Refresh data</button><button class="primary" data-action="release-holds">Release clean containers</button>`)}
+  const containerIds = generatedData.containers.slice(0, 4).map(item => displayContainerId(item.container_id));
+  const [importA = "CAXU 482190", exportA = "OOLU 729440", importB = "TEMU 338120", exportB = "MSCU 114087"] = containerIds;
+  const slots = ["08:40", "08:50", "09:00", "09:10", "09:20", "09:30", "09:40", "09:50", "10:00", "10:10", "10:20"];
+  const movements = [
+    { id: "IMP-204", type: "import", container: importA, truck: "Tractor 42", events: [
+      { time: "08:40", lane: "stack", title: "Pull from B-14", meta: "RTG-03 assigned", arrow: "right" },
+      { time: "08:50", lane: "yard", title: "Stage for pickup", meta: "Zone P-02", arrow: "right" },
+      { time: "09:00", lane: "gate", title: "Import pickup", meta: "Tractor 42" }
+    ] },
+    { id: "EXP-118", type: "export", container: exportA, truck: "Tractor 17", events: [
+      { time: "09:10", lane: "gate", title: "Export drop-off", meta: "Tractor 17", arrow: "left" },
+      { time: "09:20", lane: "yard", title: "Transfer to stack", meta: "Hostler H-06", arrow: "left" },
+      { time: "09:30", lane: "stack", title: "Stack at E-08", meta: "Export block" }
+    ] },
+    { id: "DBL-031", type: "double", container: importB, secondary: exportB, truck: "Tractor 09", events: [
+      { time: "09:30", lane: "stack", title: "Pull import", meta: `${importB} · C-21`, arrow: "right" },
+      { time: "09:40", lane: "yard", title: "Stage import", meta: "Zone P-04", arrow: "right" },
+      { time: "09:50", lane: "gate", title: "Drop + pickup", meta: "Tractor 09 · double-ended", arrow: "left" },
+      { time: "10:00", lane: "yard", title: "Transfer export", meta: `${exportB} · Hostler H-02`, arrow: "left" },
+      { time: "10:10", lane: "stack", title: "Stack export", meta: "D-17 · vessel cutoff 16:00" }
+    ] }
+  ];
+  const visibleMovements = terminalFilter === "all" ? movements : movements.filter(move => move.type === terminalFilter);
+  const events = visibleMovements.flatMap(move => move.events.map(event => ({ ...event, move })));
+  const laneCell = (time, lane) => {
+    const matches = events.filter(event => event.time === time && event.lane === lane);
+    if (!matches.length) return `<div class="terminal-cell ${lane === "gate" ? "gate-slot open" : ""}">${lane === "gate" ? "<span>Open slot</span>" : ""}</div>`;
+    return `<div class="terminal-cell ${lane === "gate" ? "gate-slot" : ""}">${matches.map(event => `
+      <button class="terminal-event ${event.move.type}" data-terminal-move="${event.move.id}">
+        <span class="event-direction ${event.arrow || ""}">${event.arrow === "right" ? "→" : event.arrow === "left" ? "←" : ""}</span>
+        <strong>${event.title}</strong>
+        <small>${event.meta}</small>
+        <b>${event.move.id}</b>
+      </button>`).join("")}</div>`;
+  };
+  return `${pageHeader("Terminal", "Synchronized stack, yard, and gate work in 10-minute operating slots",
+    `<button class="secondary" data-action="refresh-generated">Refresh plan</button><button class="primary" data-action="advance-terminal" ${terminalNow === "09:10" ? "disabled" : ""}>${terminalNow === "09:10" ? "Now · 09:10" : "Advance to 09:10"}</button>`)}
     ${renderMetricStrip([
-      { label: "Vessel calls", value: Object.keys(vesselCounts).length, detail: "In generated TOS feed" },
-      { label: "Containers", value: generatedData.containers.length, detail: `${dischargeOps.length} discharge operations` },
-      { label: "Gate ready", value: readyOps.length, detail: "Terminal-ready milestones" },
-      { label: "Late terminal ops", value: lateOps.length, detail: "Optimizer lateness flag" }
+      { label: "Gate utilization", value: "73%", detail: "8 of 11 slots planned" },
+      { label: "Import pickups", value: "4", detail: "3 staged before appointment" },
+      { label: "Export drop-offs", value: "3", detail: "All within cutoff" },
+      { label: "Double-ended moves", value: "1", detail: "42 min truck turn saved" }
     ])}
-    <div class="ops-layout">
-      <div class="page-panel">
-        <div class="panel-title"><strong>Container availability queue</strong><span>Sorted by generated available time</span></div>
-        <table class="data-table ops-table">
-          <thead><tr><th>Container</th><th>Vessel</th><th>Commodity</th><th>Available</th><th>Due</th><th>Status</th></tr></thead>
-          <tbody>${nextContainers.map(container => {
-            const gateReady = readyOps.find(op => op.container_id === container.container_id);
-            return `<tr>
-              <td><strong>${container.container_id}</strong><span>${container.size_teu} TEU · ${Number(container.gross_weight_kg).toLocaleString()} kg</span></td>
-              <td>${container.vessel_call_id}</td>
-              <td>${operationLabel(container.commodity)}</td>
-              <td>${formatDateTime(container.available_time)}</td>
-              <td>${formatDateTime(container.delivery_due)}</td>
-              <td><span class="status ${gateReady ? "ready" : ""}">${gateReady ? "Gate ready" : "Discharge planned"}</span></td>
-            </tr>`;
-          }).join("")}</tbody>
-        </table>
+    <div class="terminal-toolbar">
+      <div class="terminal-filters" aria-label="Movement filters">
+        ${[["all", "All moves"], ["import", "Imports"], ["export", "Exports"], ["double", "Double-ended"]].map(([value, label]) =>
+          `<button class="filter ${terminalFilter === value ? "active" : ""}" data-terminal-filter="${value}">${label}</button>`).join("")}
       </div>
-      <div class="page-panel">
-        <div class="panel-title"><strong>Terminal work queue</strong><span>Cranes and gate milestones</span></div>
-        <div class="ops-list">${terminalOps.slice(0, 10).map(op => {
-          const container = joinContainer(op);
-          return `<div class="ops-card ${Number(op.lateness_minutes) > 0 ? "alert" : ""}">
-            <div><strong>${operationLabel(op.operation_type)}</strong><span>${op.container_id} · ${container.vessel_call_id || "Vessel pending"}</span></div>
-            <time>${formatDateTime(op.planned_start)} - ${formatDateTime(op.planned_end)}</time>
-            <b>${formatMinutes(op.lateness_minutes)}</b>
-          </div>`;
-        }).join("")}</div>
+      <div class="terminal-legend"><span><i class="import"></i>Import</span><span><i class="export"></i>Export</span><span><i class="double"></i>Double-ended</span></div>
+    </div>
+    <div class="terminal-scroll">
+      <div class="terminal-board">
+        <div class="terminal-board-head"><span>Time</span><div><strong>Container stacks</strong><small>RTG pulls and placements</small></div><div><strong>Yard pickup zone</strong><small>Hostler staging and handoff</small></div><div><strong>Gate</strong><small>10-minute truck appointments</small></div></div>
+        <div class="terminal-now" style="top:${54 + slots.indexOf(terminalNow) * 72}px"><span>Now · ${terminalNow}</span></div>
+        ${slots.map(time => `<div class="terminal-row ${time === terminalNow ? "current" : ""}">
+          <time>${time}</time>${laneCell(time, "stack")}${laneCell(time, "yard")}${laneCell(time, "gate")}
+        </div>`).join("")}
       </div>
     </div>`;
 }
@@ -512,6 +529,7 @@ function resetScenario() {
   recoveryApplied = false;
   selectedTask = "T01";
   activeFilter = "all";
+  terminalNow = "09:00";
   document.querySelector("#scheduleSubtitle").textContent = "Terminal, truck, warehouse, cross-dock, and export plan";
   document.querySelector("#onTimeMetric").textContent = "94%";
   document.querySelector("#onTimeDelta").textContent = "17 of 18 moves protected";
@@ -692,7 +710,12 @@ function bindPageActions() {
     if (action === "refresh-market") { button.textContent = "Bids refreshed"; }
     if (action === "refresh-generated") { loadGeneratedData(); button.textContent = "Refreshing..."; }
     if (action === "release-holds") { button.textContent = "Released to gate"; button.disabled = true; }
+    if (action === "advance-terminal") { terminalNow = "09:10"; renderCurrentPage(); }
     if (action === "monitor-all") { button.textContent = "Monitoring enabled"; }
+  }));
+  document.querySelectorAll("[data-terminal-filter]").forEach(button => button.addEventListener("click", () => {
+    terminalFilter = button.dataset.terminalFilter;
+    renderCurrentPage();
   }));
   const riskFilter = document.querySelector("[data-master-filter]");
   if (riskFilter) riskFilter.addEventListener("click", () => {
